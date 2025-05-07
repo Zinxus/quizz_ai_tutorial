@@ -14,7 +14,7 @@ const page = async ({ params}:{
     const quizz = await db.query.quizzes.findFirst({
         where: eq(quizzes.id, param(quizzId)),
         with: {
-            questions: {
+            question: {
                 with: {
                     answers: true,
                 },
@@ -25,7 +25,7 @@ const page = async ({ params}:{
         return <p>Quizz not found</p>;
     }
     return (
-        <QuizzQuestions quizz={quizz}/>
+        <QuizzQuestions quizz={{ ...quizz, questions: quizz.question }}/>
     )
 }
 

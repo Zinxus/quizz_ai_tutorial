@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ChatOpenAI } from '@langchain/openai';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { JsonOutputFunctionsParser } from '@langchain/core/output_parsers';
+import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { HumanMessage } from '@langchain/core/messages';
 
 import saveQuizz from './saveToDb';
@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
         const pdfLoader = new PDFLoader(document as Blob, {
             parsedItemSeparator: " "
         });
+
         const docs = await pdfLoader.load();
 
         const selectedDocuments = docs.filter((doc: { pageContent?: string }) => doc.pageContent !== undefined);
@@ -29,11 +30,11 @@ export async function POST(request: NextRequest) {
         }
         
         const model = new ChatOpenAI({
-            modelName: 'gpt-4-1106-preview',
+            modelName: 'gpt-3.5-turbo',
             temperature: 0.7,
         });
 
-        const parser = new JsonOutputFunctionsParser();
+        const parser = new JsonOutputParser();
         const extrectionFunctionSchema = {
             name: "extractor",
             description: "Extracts fields from the oputput",
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
                                              }, 
                                         },
                                     },
-                                    required: ["question", "answer"],
+                                    required: ["questionText", "answer"],
                                 },
                             },
                         }
@@ -74,20 +75,29 @@ export async function POST(request: NextRequest) {
         const runable = model.bind({
             functions: [extrectionFunctionSchema],
             function_call: { name: "extractor" },
-        })
-        .pipe(parser);
+        });
 
-        const message = new HumanMessage(prompt + "\n" + texts.join("\n"));
-        
+        const message = new HumanMessage(`${prompt} ${texts.join(' ')}`);
+        const response = await runable.invoke([message]);
 
-        const result = await runable.invoke([ message,]);
-        
-        console.log(result);
+        const functionCall = response?.additional_kwargs?.function_call;
+        const argsJson = functionCall?.arguments;
 
-        const { quizzId } = await saveQuizz(result.quizz);
+        if (!argsJson) {
+            throw new Error("No function_call.arguments returned from OpenAI");
+        }
+
+        const parsed = JSON.parse(argsJson);
+        const { quizz } = parsed;
+        const { quizzId } = await saveQuizz(quizz);
 
         return NextResponse.json({ quizzId }, { status: 200 });
+
     } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
-    }
+        console.error("Error in /api/quizz/generate:", e);
+        return NextResponse.json(
+          { error: e.message || "Internal Server Error" },
+          { status: 500 }
+        );
+      }
 }
