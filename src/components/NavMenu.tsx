@@ -13,7 +13,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { BarChartBig, CreditCard, Settings, User } from "lucide-react"
+import { BarChartBig, CreditCard, Plus, Settings, User } from "lucide-react"
 import Link from "next/link"
 
 export function NavMenu() {
@@ -33,6 +33,12 @@ export function NavMenu() {
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
             Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/quizz/new" className=" flex flex-grow">
+            <Plus className="mr-2 h-4 w-4" />
+            <span>New Quizz</span> 
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link href="/billing" className=" flex flex-grow">

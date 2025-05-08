@@ -14,3 +14,5 @@ const page = () => {
         </Alert>
     )
 }
+
+export default page;

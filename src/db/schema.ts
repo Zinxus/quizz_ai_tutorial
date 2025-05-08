@@ -18,7 +18,7 @@ export const users = pgTable("user", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
   email: text("email").unique(),
-  emailVerified: timestamp("email_verified", { mode: "date" }),
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   stripeCustomerId: text("stripe_customer_id"),
   subscribed: boolean("subscribed"),
@@ -31,12 +31,12 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const accounts = pgTable(
   "account",
   {
-    userId: text("user_id")
+    userId: text("userId")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     provider: text("provider").notNull(),
-    providerAccountId: text("provider_account_id").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
     refresh_token: text("refresh_token"),
     access_token: text("access_token"),
     expires_at: integer("expires_at"),

@@ -27,4 +27,4 @@ export function convertDateToString(date: Date ): string {
 }
 
 export const PRICE_ID: string =
-"price_1N4v0aJ2qz3x5Xk6Z9g7Q8eE";
+"price_1RLQCrHUPnxVFP9ecEZO2NCs";

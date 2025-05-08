@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { users } from '@/db/schema';
 import { eq } from "drizzle-orm";
 
-const page = async () =>{
+export default async function Page() {
     const session = await auth();
 
     if(!session || !session.user || !session.user.id){

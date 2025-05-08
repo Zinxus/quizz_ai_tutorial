@@ -13,8 +13,8 @@ type Props = {
     }[];
 };
 
-const panelColors = ['var(--rhm-rect, #EBEDF0)',
-    '#C6E48B','#7BC96F', '#239A3B', '#196127']
+const panelColors = { 0: '#EBEDF0', 8: '#7BC96F', 4: '#C6E48B',
+   12: '#239A3B', 32: '#196127'}
 
 const SubmissionsHeatMap = (props: Props) => {
     const formattedData = props.data.map((item) => ({ 

@@ -21,3 +21,13 @@ export async function deleteSubscription({ stripeCustomerId}: {
         )
     );
 }
+
+export async function getUserSubscription({ userId }: {
+    userId: string
+}) {
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+    });
+
+    return users?.subscribed;
+}

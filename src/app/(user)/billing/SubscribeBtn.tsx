@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 import { getStripe } from "@/lib/stripe-client";
-import { useRouter } from "next/router";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -22,12 +22,12 @@ const SubscribeBtn = ({ userId, price}: Props) => {
         setLoading(true);
 
         try {
-            const { sessionId } = await fetch('/api/stripe/checkout-sessions', {
+            const { sessionId } = await fetch('/api/stripe/checkout-session', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ price }),
+                body: JSON.stringify({ price, quantity: 1 }),
             }).then((res) => res.json());
 
             const stripe = await getStripe();
@@ -40,11 +40,14 @@ const SubscribeBtn = ({ userId, price}: Props) => {
 
     return(
         <Button disabled={loading} onClick={() => handleCheckout(price)}>
-            loading? <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+        {loading ? (
+            <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Please Wait
             </>
-            {"Upgrade Your Plan"}
+        ) : (
+            "Upgrade Your Plan"
+        )}
         </Button>
     )
 }
