@@ -3,19 +3,26 @@ import { quizzes, questions as dbQuestions, questionAnswers } from "@/db/schema"
 import { InferInsertModel } from "drizzle-orm";
 
 type Quizz = InferInsertModel<typeof quizzes>;
-type Question = InferInsertModel<typeof dbQuestions>;
-type Answer = InferInsertModel<typeof questionAnswers>;
 
 interface SaveQuizzData extends Quizz {
-    questions: Array<Question & { answer?: Answer[] }>;
+    questions: Array<{
+        questionText: string;
+        answer: Array<{
+            answerText: string;
+            isCorrect: boolean;
+        }>;
+    }>;
+    userId?: string;
 }
 
+
 export default async function saveQuizz(quizzData: SaveQuizzData) {
-    const { name, description, questions } = quizzData;
+    const { name, description, userId, questions } = quizzData;
 
     const newQuizz = await db.insert(quizzes).values({
         name,
         description,
+        userId,
     }).returning({insertedId: quizzes.id});
     const quizzId = newQuizz[0].insertedId;
 

@@ -5,29 +5,45 @@ import { eq } from "drizzle-orm";
 export async function createSubscription({ stripeCustomerId}: {
     stripeCustomerId: string
 }) {
-    await db.update(users).set({ subscribed: true}).where(
-        eq(users.stripeCustomerId,
-            stripeCustomerId
-        )
-    );
+    try {
+        await db.update(users).set({ subscribed: true}).where(
+            eq(users.stripeCustomerId,
+                stripeCustomerId
+            )
+        );
+        console.log(`Subscription created for customer: ${stripeCustomerId}`);
+    } catch (error) {
+        console.error("Error creating subscription:", error);
+        throw error; // Re-throw để webhook có thể trả về 500
+    }
 }
 
 export async function deleteSubscription({ stripeCustomerId}: {
     stripeCustomerId: string
 }) {
-    await db.update(users).set({ subscribed: false}).where(
-        eq(users.stripeCustomerId,
-            stripeCustomerId
-        )
-    );
+    try {
+        await db.update(users).set({ subscribed: false}).where(
+            eq(users.stripeCustomerId,
+                stripeCustomerId
+            )
+        );
+        console.log(`Subscription deleted for customer: ${stripeCustomerId}`);
+    } catch (error) {
+        console.error("Error deleting subscription:", error);
+        throw error; // Re-throw
+    }
 }
 
 export async function getUserSubscription({ userId }: {
     userId: string
-}) {
-    const user = await db.query.users.findFirst({
-        where: eq(users.id, userId)
-    });
-
-    return users?.subscribed;
+}): Promise<boolean | undefined> {
+    try {
+        const user = await db.query.users.findFirst({
+            where: eq(users.id, userId)
+        });
+        return user?.subscribed ?? undefined;
+    } catch (error) {
+        console.error("Error getting user subscription:", error);
+        return undefined; // Trả về undefined khi có lỗi
+    }
 }

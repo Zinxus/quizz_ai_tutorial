@@ -1,10 +1,6 @@
 import UploadDoc from "../UploadDoc";
 import { auth, signIn } from "@/auth";
 import { getUserSubscription } from "@/actions/userSubscriptions";
-import { Lock, Flame  } from 'lucide-react';
-import { getStripe } from "@/lib/stripe-client";
-import { useRouter } from 'next/navigation';
-import { PRICE_ID } from "@/lib/utils";
 import UpgradePlan from "../Upgradeplan";
 
 const page = async () => {
@@ -14,7 +10,7 @@ const page = async () => {
         signIn();
         return;
     }
-    const subscribed = await getUserSubscription({ userId})
+    const subscribed = await getUserSubscription({ userId});
 
 
     return (
