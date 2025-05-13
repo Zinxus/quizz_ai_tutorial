@@ -6,26 +6,98 @@ import { ChevronLeft, X } from "lucide-react";
 import ResultCard from "./ResultCard";
 import QuizzSubmission from "./QuizzSubmission";
 
-const questions = [
-  {
-    questionText: "What is the virtual DOM?",
-    answers: [
-      { answerText: "A virtual representation of the DOM", isCorrect: true, id: 1 },
-      { answerText: "A real DOM", isCorrect: false, id: 2 },
-      { answerText: "A virtual representation of the browser", isCorrect: false, id: 3 },
-      { answerText: "A virtual representation of the server", isCorrect: false, id: 4 },
-    ],
-  },
-  {
-    questionText: "What is the purpose of React Router?",
-    answers: [
-      { answerText: "To manage application state", isCorrect: false, id: 1 },
-      { answerText: "To handle user authentication", isCorrect: false, id: 2 },
-      { answerText: "To manage application routing", isCorrect: true, id: 3 },
-      { answerText: "To handle API requests", isCorrect: false, id: 4 },
-    ],
-  },
-];
+const questions =  [
+      {
+        questionText: "Which of the following idioms best describes a situation where someone avoids taking responsibility?",
+        answers: [
+          { answerText: "To bite the bullet", isCorrect: false, id: 1 },
+          { answerText: "To sit on the fence", isCorrect: false, id: 2 },
+          { answerText: "To pass the buck", isCorrect: true, id: 3 },
+          { answerText: "To go the extra mile", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "The new policy is expected to have a significant impact ________ the company's future.",
+        answers: [
+          { answerText: "on", isCorrect: true, id: 1 },
+          { answerText: "in", isCorrect: false, id: 2 },
+          { answerText: "at", isCorrect: false, id: 3 },
+          { answerText: "for", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "Despite the overwhelming evidence, he continued to ________ his innocence.",
+        answers: [
+          { answerText: "profess", isCorrect: true, id: 1 },
+          { answerText: "confess", isCorrect: false, id: 2 },
+          { answerText: "allege", isCorrect: false, id: 3 },
+          { answerText: "assert", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "She has a ________ for classical music and attends concerts regularly.",
+        answers: [
+          { answerText: "predilection", isCorrect: true, id: 1 },
+          { answerText: "disinclination", isCorrect: false, id: 2 },
+          { answerText: "negligence", isCorrect: false, id: 3 },
+          { answerText: "apathy", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "The company is undergoing a period of ________ due to the recent economic downturn.",
+        answers: [
+          { answerText: "austerity", isCorrect: true, id: 1 },
+          { answerText: "affluence", isCorrect: false, id: 2 },
+          { answerText: "proliferation", isCorrect: false, id: 3 },
+          { answerText: "exuberance", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "Were it ________ for your timely intervention, the situation could have escalated.",
+        answers: [
+          { answerText: "not", isCorrect: true, id: 1 },
+          { answerText: "without", isCorrect: false, id: 2 },
+          { answerText: "but", isCorrect: false, id: 3 },
+          { answerText: "except", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "His arguments, while seemingly persuasive, didn't quite ________ muster with the panel of experts.",
+        answers: [
+          { answerText: "come up to", isCorrect: true, id: 1 },
+          { answerText: "look up to", isCorrect: false, id: 2 },
+          { answerText: "get away with", isCorrect: false, id: 3 },
+          { answerText: "put up with", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "The politician's speech was full of rhetoric, but lacked any real ________.",
+        answers: [
+          { answerText: "substance", isCorrect: true, id: 1 },
+          { answerText: "eloquence", isCorrect: false, id: 2 },
+          { answerText: "verbosity", isCorrect: false, id: 3 },
+          { answerText: "intonation", isCorrect: false, id: 4 }
+        ]
+      },
+      {
+        questionText: "She found it difficult to ________ her feelings after such a traumatic experience.",
+        answers: [
+          { answerText: "articulate", isCorrect: true, id: 1},
+          { answerText: "imply", isCorrect: false, id: 2 },
+          { answerText: "infer", isCorrect: false, id: 3 },
+          { answerText: "insinuate", isCorrect: false, id: 4}
+        ]
+      },
+      {
+        questionText: "The company decided to ________ its operations in several unprofitable regions.",
+        answers: [
+          { answerText: "downsize", isCorrect: false, id:1 },
+          { answerText: "streamline", isCorrect: false, id: 2},
+          { answerText: "consolidate", isCorrect: true, id: 3},
+          { answerText: "amalgamate", isCorrect: false, id: 4 }
+        ]
+      }
+    ]
 
 export default function Home() {
   const [started, setStarted] = useState<boolean>(false);
@@ -113,7 +185,7 @@ export default function Home() {
             correctAnswer={questions[currentQuestion].answers.find(answer => answer.isCorrect)?.answerText || ""}
           />
         )}
-        <Button variant="default" size="lg" onClick={handleNext}>
+        <Button variant="neo" size="lg" onClick={handleNext}>
           {!started ? "Start" : (currentQuestion === questions.length - 1) ? "Submit" : "Next"}
         </Button>
       </footer>

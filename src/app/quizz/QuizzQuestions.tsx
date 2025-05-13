@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Progressbar from "@/components/progressbar";
-import { ChevronLeft, X } from "lucide-react";
+import { X } from "lucide-react";
 import ResultCard from "./ResultCard";
 import QuizzSubmission from "./QuizzSubmission";
 import { InferSelectModel } from "drizzle-orm";
@@ -14,18 +14,18 @@ type Answer = InferSelectModel<typeof questionAnswers>;
 type Question = InferSelectModel<typeof DbQuestions> & { answers: Answer[] };
 type Quizz = InferSelectModel<typeof quizzes> & { questions: Question[] };
 
-type Props = {
-  quizz: Quizz;
-};
+type Props = { quizz: Quizz };
 
 export default function QuizzQuestions({ quizz }: Props) {
   const { questions } = quizz;
-  const [started, setStarted] = useState<boolean>(false);
-  const [currentQuestion, setCurrentQuestion] = useState<number>(0);
-  const [score, setScore] = useState<number>(0);
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [started, setStarted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [userAnswers, setUserAnswers] = useState<{ questionId: number; answerId: number }[]>([]);
+  const [userAnswers, setUserAnswers] = useState<
+    { questionId: number; answerId: number }[]
+  >([]);
   const router = useRouter();
 
   const handleNext = () => {
@@ -33,6 +33,9 @@ export default function QuizzQuestions({ quizz }: Props) {
       setStarted(true);
       return;
     }
+    // Nếu chưa chọn đáp án thì không cho chuyển câu
+    if (selectedAnswer === null) return;
+
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
       setSelectedAnswer(null);
@@ -44,9 +47,7 @@ export default function QuizzQuestions({ quizz }: Props) {
   const handleAnswer = (answer: Answer, questionId: number) => {
     setSelectedAnswer(answer.id);
     setUserAnswers((prev) => [...prev, { questionId, answerId: answer.id }]);
-    if (answer.isCorrect) {
-      setScore((prev) => prev + 1);
-    }
+    if (answer.isCorrect) setScore((prev) => prev + 1);
   };
 
   const handleSubmit = async () => {
@@ -58,23 +59,15 @@ export default function QuizzQuestions({ quizz }: Props) {
     setSubmitted(true);
   };
 
-  const handlePrev = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
-      setSelectedAnswer(null);
-    }
-  };
-
   const handleExit = () => {
     router.push("/dashboard");
   };
 
   const scorePercentage = Math.round((score / questions.length) * 100);
-
-  const currentQuestionData = questions[currentQuestion];
+  const current = questions[currentQuestion];
   const isCorrect =
     selectedAnswer !== null
-      ? currentQuestionData.answers.find((a) => a.id === selectedAnswer)?.isCorrect ?? null
+      ? current.answers.find((a) => a.id === selectedAnswer)?.isCorrect ?? null
       : null;
 
   if (submitted) {
@@ -89,11 +82,8 @@ export default function QuizzQuestions({ quizz }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 z-10 bg-background shadow-md py-4 px-6">
-        <header className="grid grid-cols-[auto,1fr,auto] items-center gap-4">
-          <Button size="icon" variant="outline" onClick={handlePrev}>
-            <ChevronLeft />
-          </Button>
+      <div className="sticky top-0 z-20 bg-background shadow-md py-4 px-6">
+        <header className="grid grid-cols-[1fr,auto] items-center gap-4">
           <Progressbar
             value={started ? ((currentQuestion + 1) / questions.length) * 100 : 0}
           />
@@ -103,16 +93,14 @@ export default function QuizzQuestions({ quizz }: Props) {
         </header>
       </div>
 
-      <main className="flex flex-col flex-1 items-center justify-center px-6">
+      <main className="flex flex-col flex-1 items-center justify-center px-6 pb-36">
         {!started ? (
           <h1 className="text-3xl font-bold">Welcome to Quiz Page 👋</h1>
         ) : (
           <div className="w-full max-w-md text-center">
-            <h2 className="text-2xl font-bold mb-6">
-              {currentQuestionData.questionText}
-            </h2>
+            <h2 className="text-2xl font-bold mb-6">{current.questionText}</h2>
             <div className="flex flex-col gap-4">
-              {currentQuestionData.answers.map((answer) => {
+              {current.answers.map((answer) => {
                 const variant =
                   selectedAnswer === answer.id
                     ? answer.isCorrect
@@ -125,10 +113,10 @@ export default function QuizzQuestions({ quizz }: Props) {
                     disabled={selectedAnswer !== null}
                     variant={variant}
                     size="xl"
-                    onClick={() => handleAnswer(answer, currentQuestionData.id)}
-                    className="disabled:opacity-100"
+                    onClick={() => handleAnswer(answer, current.id)}
+                    className="disabled:opacity-100 whitespace-normal break-words text-left"
                   >
-                    <p>{answer.answerText}</p>
+                    {answer.answerText}
                   </Button>
                 );
               })}
@@ -137,20 +125,33 @@ export default function QuizzQuestions({ quizz }: Props) {
         )}
       </main>
 
-      <footer className="sticky bottom-0 pb-9 px-6">
+      <footer className="sticky bottom-0 z-20 bg-background pb-9 px-6">
         <ResultCard
           iscorrect={isCorrect}
-          correctAnswer={
-            currentQuestionData.answers.find((a) => a.isCorrect)?.answerText || ""
-          }
+          correctAnswer={current.answers.find((a) => a.isCorrect)?.answerText || ""}
         />
-        {currentQuestion === questions.length - 1 ? (
-          <Button variant="neo" size="lg" onClick={handleSubmit}>
+
+        {!started ? (
+          <Button variant="neo" size="lg" onClick={handleNext}>
+            Start
+          </Button>
+        ) : currentQuestion === questions.length - 1 ? (
+          <Button
+            variant="neo"
+            size="lg"
+            onClick={handleSubmit}
+            disabled={selectedAnswer === null}
+          >
             Submit
           </Button>
         ) : (
-          <Button variant="neo" size="lg" onClick={handleNext}>
-            {!started ? "Start" : "Next"}
+          <Button
+            variant="neo"
+            size="lg"
+            onClick={handleNext}
+            disabled={selectedAnswer === null}
+          >
+            Next
           </Button>
         )}
       </footer>

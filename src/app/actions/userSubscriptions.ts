@@ -44,6 +44,6 @@ export async function getUserSubscription({ userId }: {
         return user?.subscribed ?? undefined;
     } catch (error) {
         console.error("Error getting user subscription:", error);
-        return undefined; // Trả về undefined khi có lỗi
+        return undefined; 
     }
 }

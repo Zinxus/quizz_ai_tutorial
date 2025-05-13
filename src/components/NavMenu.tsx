@@ -31,8 +31,10 @@ export function NavMenu() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
+            <Link href='/profile' className=" flex flex-grow">
             <User className="mr-2 h-4 w-4" />
             Profile
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Link href="/quizz/new" className=" flex flex-grow">
