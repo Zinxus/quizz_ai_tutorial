@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { SessionProvider } from 'next-auth/react'
 import Header from '@/components/ui/header'
+import ChatWidget from '@/components/ChatWidget'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className={"dark"}>
         <Header/>
         {children}
+        <ChatWidget/>
       </body>
       </SessionProvider>
     </html>

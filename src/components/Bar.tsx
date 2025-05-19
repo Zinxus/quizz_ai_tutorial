@@ -8,7 +8,7 @@ type BarProps = {
 const Bar = (props: BarProps) => {
     const { percentage, color } = props;
     const barStyle = {
-        height: `${percentage}%`, // Sửa: height cần string và đúng format `${}`
+        height: `${percentage}%`, 
     };
 
     const barBgClasses: Record<string, string> = {
