@@ -1,4 +1,3 @@
-// src/app/(user)/profile/QuizzItem.tsx
 "use client";
 
 import dynamic from "next/dynamic";

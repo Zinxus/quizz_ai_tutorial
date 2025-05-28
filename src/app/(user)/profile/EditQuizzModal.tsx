@@ -22,7 +22,7 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
   const [payload, setPayload] = useState<any>(null);
   const router = useRouter();
 
-  // Load chi tiết khi mở lần đầu
+  // Load quizz details when dialog opens
   const onOpenChange = async (val: boolean) => {
     setOpen(val);
     if (val && !payload) {
@@ -31,7 +31,7 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
     }
   };
 
-  // Thêm câu hỏi mới
+  // Add Question
   const addQuestion = () => {
     setPayload((prev: any) => ({
       ...prev,
@@ -42,14 +42,14 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
     }));
   };
 
-  // Thêm đáp án mới cho câu hỏi i
+  // Add Answer
   const addAnswer = (qIndex: number) => {
     const qs = [...payload.questions];
     qs[qIndex].answers.push({ answerText: "", isCorrect: false });
     setPayload({ ...payload, questions: qs });
   };
 
-  // Các handler cập nhật vẫn như trước…
+  // Handler to save changes
 
   const handleSave = async () => {
     await updateQuizzFull(quizzId, payload);

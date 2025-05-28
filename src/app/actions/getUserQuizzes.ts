@@ -1,4 +1,3 @@
-// src/actions/getUserQuizzes.ts
 import { db } from "@/db";
 import { eq, sql } from "drizzle-orm";
 import { quizzes, questions } from "@/db/schema";

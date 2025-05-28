@@ -1,4 +1,3 @@
-// src/app/actions/deleteQuizzAction.ts
 "use server";
 
 import { db } from "@/db";
@@ -7,26 +6,26 @@ import { eq, inArray } from "drizzle-orm";
 
 export async function deleteQuizzAction(quizzId: number) {
   await db.transaction(async (tx) => {
-    // 1. Lấy danh sách question IDs của quiz
+    // Load all questions for the quiz
     const qList = await tx
       .select({ id: questions.id })
       .from(questions)
       .where(eq(questions.quizzId, quizzId));
     const questionIds = qList.map((q) => q.id);
 
-    // 2. Xóa tất cả answers liên quan
+    // Delete all question ansers 
     if (questionIds.length) {
       await tx
         .delete(questionAnswers)
         .where(inArray(questionAnswers.questionId, questionIds));
     }
 
-    // 3. Xóa tất cả questions liên quan
+    // Delete all question recards
     await tx
       .delete(questions)
       .where(eq(questions.quizzId, quizzId));
 
-    // 4. Cuối cùng xóa quiz
+    // Delete the quiz itself
     await tx
       .delete(quizzes)
       .where(eq(quizzes.id, quizzId));

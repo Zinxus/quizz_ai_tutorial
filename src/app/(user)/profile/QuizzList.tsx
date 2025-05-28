@@ -1,4 +1,3 @@
-// src/app/(user)/profile/QuizzList.tsx
 "use client";
 
 import QuizzItem from "./QuizzItem";

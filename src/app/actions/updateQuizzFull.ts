@@ -1,4 +1,3 @@
-// src/app/actions/updateQuizzFull.ts
 "use server";
 
 import { db } from "@/db";
@@ -26,7 +25,7 @@ export async function updateQuizzFull(
   payload: UpdatedQuizPayload
 ) {
   await db.transaction(async (tx) => {
-    // 1. Update thông tin quiz
+    // Update information of the quiz
     await tx
       .update(quizzes)
       .set({
@@ -35,7 +34,7 @@ export async function updateQuizzFull(
       })
       .where(eq(quizzes.id, quizzId));
 
-    // 2. Lấy danh sách question IDs cũ để xóa đáp án
+    // Take the old questions for the quiz
     const oldQuestions = await tx
       .select({ id: questions.id })
       .from(questions)
@@ -43,19 +42,19 @@ export async function updateQuizzFull(
 
     const questionIds = oldQuestions.map((q) => q.id);
 
-    // 3. Xóa đáp án cũ
+    // Delete old answers for the quiz
     if (questionIds.length > 0) {
       await tx
         .delete(questionAnswers)
         .where(inArray(questionAnswers.questionId, questionIds));
     }
 
-    // 4. Xóa câu hỏi cũ
+    // Dellete old questions for the quiz
     await tx
       .delete(questions)
       .where(eq(questions.quizzId, quizzId));
 
-    // 5. Chèn câu hỏi và đáp án mới
+    // Insert new questions and answers
     for (const q of payload.questions) {
       const [{ insertedId }] = await tx
         .insert(questions)

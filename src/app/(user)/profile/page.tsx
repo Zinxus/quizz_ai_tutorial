@@ -1,4 +1,3 @@
-// src/app/(user)/profile/page.tsx
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import QuizzList from "./QuizzList";
