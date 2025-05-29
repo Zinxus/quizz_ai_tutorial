@@ -10,7 +10,12 @@ export default function ChatInput({ onSend }: { onSend: (text: string) => void }
         className="flex-1 border text-black rounded px-2 py-1"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onSend(text) && setText("")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && text.trim() !== "") {
+            onSend(text);
+            setText("");
+          }
+        }}
       />
       <button
         className="bg-blue-600 text-white px-3 rounded"

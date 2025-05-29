@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import ResultCard from "../ResultCard"; 
+import ResultCard from "../ResultCard";
 import { InferSelectModel } from "drizzle-orm";
 import { questions as DbQuestions, questionAnswers } from "@/db/schema";
 
@@ -35,16 +35,32 @@ export default function WriteQuestion({
     setIsCorrect(null);
   }, [question.id]);
 
-  const correctAnswerText = question.answers[0]?.answerText?.toLowerCase().trim() ?? '';
+  const correctAnswerText =
+    question.answers[0]?.answerText?.toLowerCase().trim() ?? "";
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (userAnswer.trim() === "") return;
 
     setIsAnswered(true);
-    const correct = userAnswer.toLowerCase().trim() === correctAnswerText;
-    setIsCorrect(correct);
 
-    onAnswered(question.id, correct, undefined, userAnswer);
+    try {
+      const res = await fetch("/api/quizz/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionText: question.questionText,
+          correctAnswerText,
+          userAnswer: userAnswer.trim(),
+        }),
+      });
+      const data = await res.json();
+      setIsCorrect(data.isCorrect);
+      onAnswered(question.id, data.isCorrect, undefined, userAnswer);
+    } catch (error) {
+      console.error("Failed to evaluate answer:", error);
+      setIsCorrect(false);
+      onAnswered(question.id, false, undefined, userAnswer);
+    }
   };
 
   const handleNextOrSubmit = () => {
@@ -60,7 +76,7 @@ export default function WriteQuestion({
         placeholder="Write your answer here..."
         value={userAnswer}
         onChange={(e) => setUserAnswer(e.target.value)}
-        disabled={isAnswered} 
+        disabled={isAnswered}
       />
       {!isAnswered ? (
         <Button

@@ -104,15 +104,30 @@ export default function ListenQuestion({
     [question.audioText, speakText, cancelSpeech]
   );
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (userAnswer.trim() === "") return;
 
     cancelSpeech();
     setIsAnswered(true);
-    const correct = userAnswer.toLowerCase().trim() === correctAnswerText;
-    setIsCorrect(correct);
 
-    onAnswered(question.id, correct, undefined, userAnswer);
+    try {
+      const res = await fetch("/api/quizz/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionText: question.questionText,
+          correctAnswerText,
+          userAnswer: userAnswer.trim(),
+        }),
+      });
+      const data = await res.json();
+      setIsCorrect(data.isCorrect);
+      onAnswered(question.id, data.isCorrect, undefined, userAnswer);
+    } catch (error) {
+      console.error("Failed to evaluate answer:", error);
+      setIsCorrect(false);
+      onAnswered(question.id, false, undefined, userAnswer);
+    }
   };
 
   const handleNextOrSubmit = () => {

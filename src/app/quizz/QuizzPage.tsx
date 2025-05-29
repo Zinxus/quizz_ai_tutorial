@@ -70,8 +70,8 @@ export default function QuizzPage({ quizz }: Props) {
       // If not the last question, move to the next question after a short delay
       // (Example: 3 second for the user to view the ResultCard)
         setTimeout(() => {
-          setCurrentQuestionIndex((prev) => prev + 3);
-        }, 1000);
+          setCurrentQuestionIndex((prev) => prev + 1);
+        }, 1500);
       }
     },
     [isLastQuestion]
