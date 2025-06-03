@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 type QuestionType = "multiple_choice" | "write" | "listen";
-
 type Mode = "upload" | "topic" | "random";
 
 const UploadDoc = () => {
@@ -12,6 +11,7 @@ const UploadDoc = () => {
   const [document, setDocument] = useState<File | null>(null);
   const [topic, setTopic] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [level, setLevel] = useState<string>("A2");
   const [error, setError] = useState<string>("");
   const router = useRouter();
 
@@ -36,11 +36,11 @@ const UploadDoc = () => {
       setError("Please enter a topic.");
       return;
     }
-    if (numberOfQuestions <= 0) {
+    if (mode !== "upload" && numberOfQuestions <= 0) {
       setError("Number of questions must be greater than 0.");
       return;
     }
-    if (selectedQuestionTypes.length === 0) {
+    if (mode !== "upload" && selectedQuestionTypes.length === 0) {
       setError("Please select at least one question type.");
       return;
     }
@@ -51,8 +51,11 @@ const UploadDoc = () => {
     if (mode === "upload") formData.append("pdf", document as Blob);
     if (mode === "topic") formData.append("topic", topic.trim());
 
-    formData.append("questionTypes", JSON.stringify(selectedQuestionTypes));
-    formData.append("numberOfQuestions", numberOfQuestions.toString());
+    if (mode !== "upload") {
+      formData.append("questionTypes", JSON.stringify(selectedQuestionTypes));
+      formData.append("numberOfQuestions", numberOfQuestions.toString());
+      formData.append("level", level);
+    }
 
     try {
       const res = await fetch("/api/quizz/generate", {
@@ -142,50 +145,71 @@ const UploadDoc = () => {
           />
         )}
 
-        <div className="flex flex-col gap-2">
-            <label htmlFor="numQuestions" className="font-semibold">Số lượng câu hỏi:</label>
-            <input
-                type="number"
-                id="numQuestions"
-                min="1"
-                value={numberOfQuestions}
-                onChange={(e) => setNumberOfQuestions(parseInt(e.target.value) || 1)}
-                className="w-full border rounded px-3 py-2 text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-        </div>
-
-        <div className="flex flex-col gap-2">
-            <span className="font-semibold">Chọn loại câu hỏi:</span>
-            <div className="flex gap-4 flex-wrap">
-                <label className="flex items-center cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={selectedQuestionTypes.includes("multiple_choice")}
-                        onChange={() => handleQuestionTypeChange("multiple_choice")}
-                        className="mr-2 w-4 h-4"
-                    />
-                    Trắc nghiệm
-                </label>
-                <label className="flex items-center cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={selectedQuestionTypes.includes("write")}
-                        onChange={() => handleQuestionTypeChange("write")}
-                        className="mr-2 w-4 h-4"
-                    />
-                    Tự luận
-                </label>
-                <label className="flex items-center cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={selectedQuestionTypes.includes("listen")}
-                        onChange={() => handleQuestionTypeChange("listen")}
-                        className="mr-2 w-4 h-4"
-                    />
-                    Nghe
-                </label>
+        {/* Chỉ hiển thị khi KHÔNG phải chế độ upload */}
+        {mode !== "upload" && (
+          <>
+            <div className="flex flex-col gap-2">
+                <label htmlFor="numQuestions" className="font-semibold">Số lượng câu hỏi:</label>
+                <input
+                    type="number"
+                    id="numQuestions"
+                    min="1"
+                    value={numberOfQuestions}
+                    onChange={(e) => setNumberOfQuestions(parseInt(e.target.value) || 1)}
+                    className="w-full border rounded px-3 py-2 text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
             </div>
-        </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="difficultyLevel" className="font-semibold">Chọn trình độ (CEFR):</label>
+              <select
+                id="difficultyLevel"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full border rounded px-3 py-2 text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="A1">A1 - Beginner</option>
+                <option value="A2">A2 - Elementary</option>
+                <option value="B1">B1 - Intermediate</option>
+                <option value="B2">B2 - Upper-Intermediate</option>
+                <option value="C1">C1 - Advanced</option>
+                <option value="C2">C2 - Proficient</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <span className="font-semibold">Chọn loại câu hỏi:</span>
+                <div className="flex gap-4 flex-wrap">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={selectedQuestionTypes.includes("multiple_choice")}
+                            onChange={() => handleQuestionTypeChange("multiple_choice")}
+                            className="mr-2 w-4 h-4"
+                        />
+                        Trắc nghiệm
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={selectedQuestionTypes.includes("write")}
+                            onChange={() => handleQuestionTypeChange("write")}
+                            className="mr-2 w-4 h-4"
+                        />
+                        Tự luận
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={selectedQuestionTypes.includes("listen")}
+                            onChange={() => handleQuestionTypeChange("listen")}
+                            className="mr-2 w-4 h-4"
+                        />
+                        Nghe
+                    </label>
+                </div>
+            </div>
+          </>
+        )}
 
         {error && <p className="text-red-600 text-sm mt-4">{error}</p>}
 

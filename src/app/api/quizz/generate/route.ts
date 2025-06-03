@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
 
     const questionTypesRaw = body.get("questionTypes")?.toString();
     const numberOfQuestionsRaw = body.get("numberOfQuestions")?.toString();
+    const level = body.get("level")?.toString() || "A2";
 
     let selectedQuestionTypes: string[] = [];
     if (questionTypesRaw) {
@@ -78,14 +79,15 @@ export async function POST(request: NextRequest) {
         }).filter(Boolean).join(", ");
 
         const basePrompt = `You are an experienced English teacher preparing a language learning quiz for non-native speakers who are studying English as a second language. 
-        Create a test with ${numberOfQuestions} questions. The learners are from intermediate to advanced level according to CEFR or international English learner standards. 
+        Create a test with ${numberOfQuestions} questions. Create a test for learners at ${level} according to CEFR. 
         Design questions that specifically help learners improve their English skills (grammar, vocabulary, listening, and writing). Include the following question types: ${questionTypesString}. 
         Ensure that questions are suitable for language learners (e.g., clear context, limited idiomatic expressions unless explained).`;
 
-        
+
         const questionSchemaProperties: Record<string, any> = {
             questionText: { type: "string" },
             type: { type: "string", enum: ["multiple_choice", "write", "listen"] },
+            order: { type: "integer", description: "The sequential order of the question in the quiz, starting from 0." }, 
             answers: {
                 type: "array",
                 items: {
@@ -106,38 +108,44 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const endPrompt = `Return JSON in the following format:
+        const endPrompt = `Trả về JSON theo định dạng sau:
         {
         "quizz": {
-            "name": "Name of the quiz",
-            "description": "Description of the quiz",
+            "name": "Tên của bài kiểm tra",
+            "description": "Mô tả của bài kiểm tra",
             "questions": [
             {
-                "questionText": "Quiz question text here",
-                "type": "multiple_choice", // Example of question type
+                // Tạo câu hỏi theo tiêu chuẩn CERF, Toeic, Ielts
+                "questionText": "Văn bản cho câu hỏi trắc nghiệm tại đây",
+                "type": "multiple_choice", // Ví dụ về loại câu hỏi
+                "order": 0,
                 // If listen, add audioText feld
-                ${selectedQuestionTypes.includes("listen") ? '"audioText": "This is the text to be spoken for the listening question.",' : ''}
+                ${selectedQuestionTypes.includes("listen") ? '"audioText": "Tạo phần nghe cho câu hỏi có thể là một đoạn văn, một vài câu giao tiếp, một vài câu, một câu, một từ "",' : ''}
                 "answers": [
-                { "answerText": "Answer A", "isCorrect": false },
-                { "answerText": "Answer B", "isCorrect": true }
+                { "answerText": "Câu trả lời A", "isCorrect": false },
+                { "answerText": "Câu trả lời B", "isCorrect": true }
                 ]
             },
             {
-                "questionText": "Question text for write-in answer",
+                // Tạo câu hỏi theo tiêu chuẩn CERF, Toeic, Ielts
+                "questionText": "Tạo câu hỏi để người dùng viết một từ hoặc một câu tham khảo từ các bài kiểm tra tiếng Anh",
                 "type": "write",
+                "order": 1, 
                 "answers": [
-                    { "answerText": "Correct answer for written-in", "isCorrect": true }
+                    { "answerText": "Câu trả lời đúng cho câu trả lời viết", "isCorrect": true }
                 ]
             },
             {
-                "questionText": "Question text for listening question",
+                // Tạo câu hỏi cho nội dung nghe theo tiêu chuẩn CERF, Toeic, Ielts
+                "questionText": "Câu hỏi cho đoạn văn nghe tham khảo từ các bài kiểm tra tiếng Anh",
                 "type": "listen",
-                "audioText": "This is the text that should be spoken for this listening question.",
+                "order": 2, 
+                "audioText": "Đây là văn bản sẽ được nói cho câu hỏi nghe này.",
                 "answers": [
-                    { "answerText": "Correct Answer for listening", "isCorrect": true }
+                    { "answerText": "Câu trả lời đúng cho phần nghe", "isCorrect": true }
                 ]
             }
-            // ... Any additional questions can be added here
+            // ... Bất kỳ câu hỏi bổ sung nào cũng có thể được thêm vào đây, đảm bảo thứ tự chính xác cho từng câu hỏi.
             ]
         }
         }`;
@@ -175,8 +183,8 @@ export async function POST(request: NextRequest) {
                                 type: "array",
                                 items: {
                                     type: "object",
-                                    properties: questionSchemaProperties,
-                                    required: ["questionText", "type", "answers"],
+                                    properties: questionSchemaProperties, 
+                                    required: ["questionText", "type", "answers", "order"],
                                 },
                             },
                         },
@@ -204,6 +212,9 @@ export async function POST(request: NextRequest) {
 
         const parsed = JSON.parse(argsJson);
         const { quizz } = parsed;
+
+        quizz.questions.sort((a: any, b: any) => a.order - b.order);
+
 
         const { quizzId } = await saveQuizz({ ...quizz, userId });
 

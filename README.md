@@ -1,6 +1,39 @@
-The project that uses AI to generate quizzes.
+Cài đặt Vscode nếu chưa cài:
+Truy cập https://code.visualstudio.com/
 
-## Tech Stack 
+ 
+
+Chọn phiên bản và tải xuống.
+Nhấn mở và cài đặt.
+Sau khi cài đặt Vscode, cài đặt gói ngôn ngữ cần thiết node.js:
+Truy cập link: https://nodejs.org/en/download
+
+ 
+
+Sau khi đã tải về mở và cài đặt node.js.
+
+ 
+
+Mở terminal chạy lênh sau để đảm bảo node.js đã được cài đặt:
+ 
+Mở Vscode open folder chứa code.
+Mở terminal, cd tới folder: cd /folder
+Chạy lệnh sau để import các thư viện cần tiết có trong package.json:
+npm install
+Chạy lệnh sau để fix các thư viện bị lỗi
+npm audit fix
+hoặc
+npm audit fix –force
+Để chạy code trước tiên chạy lệnh 
+npm run build 
+sau đó chạy 
+npm run dev
+Mở trình duyệt web.
+Tìm kiếm:
+http://localhost:3000/
+
+
+## Công Nghệ Sử Dụng
 
 - Next-auth - Authentication
 - Shadcn ui - ui library
@@ -12,13 +45,10 @@ The project that uses AI to generate quizzes.
 - Stripe - Payments
 - Tanstack - Table
 - Typescript - Type Checking
-- Vercel - Deployment
 - Stripe - Payments
 - Zod - Schema Validation
 
-## Getting Started
-
-First, run the development server:
+Đầu Tiên
 
 ```bash
 npm run dev
@@ -30,15 +60,9 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Environment Variables
-
-Create a new .env file and add your keys in the following manner:
+Kiểm tra file .evn đã có chưa:
 ```
 OPENAI_API_KEY=""
 GOOGLE_CLIENT_ID=""
@@ -50,9 +74,3 @@ STRIPE_SECRET_KEY=""
 STRIPE_WEBHOOK_SECRET=""
 STRIPE_WEBHOOK_LOCAL_SERCRET=""
 ```
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

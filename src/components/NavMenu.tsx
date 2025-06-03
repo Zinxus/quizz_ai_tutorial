@@ -31,9 +31,9 @@ export function NavMenu() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link href='/profile' className=" flex flex-grow">
-            <User className="mr-2 h-4 w-4" />
-            Profile
+            <Link href='/edit_quizz' className=" flex flex-grow">
+            <Settings className="mr-2 h-4 w-4" />
+            Edit Quizz
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
@@ -49,10 +49,11 @@ export function NavMenu() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
+            <Link href='/profile' className=" flex flex-grow">
+            <User className="mr-2 h-4 w-4" />
+            Profile
+            </Link>
           </DropdownMenuItem>
-
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>GitHub</DropdownMenuItem>

@@ -10,46 +10,45 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// Bảng Users: Lưu trữ thông tin người dùng
+// Table Users
 export const users = pgTable("user", {
     id: text("id")
         .primaryKey()
-        .$defaultFn(() => crypto.randomUUID()), // ID duy nhất cho mỗi người dùng
-    name: text("name"), // Tên người dùng
-    email: text("email").unique(), // Email người dùng, phải là duy nhất
-    emailVerified: timestamp("emailVerified", { mode: "date" }), // Thời gian xác minh email
-    image: text("image"), // URL ảnh đại diện
-    stripeCustomerId: text("stripe_customer_id"), // ID khách hàng Stripe (nếu có)
-    subscribed: boolean("subscribed"), // Trạng thái đăng ký (ví dụ: trả phí)
+        .$defaultFn(() => crypto.randomUUID()), 
+    name: text("name"), 
+    email: text("email").unique(), 
+    emailVerified: timestamp("emailVerified", { mode: "date" }), 
+    image: text("image"), 
+    stripeCustomerId: text("stripe_customer_id"), 
+    subscribed: boolean("subscribed"), 
 });
 
-// Quan hệ cho bảng Users: Một người dùng có thể có nhiều bài kiểm tra và nhiều lượt nộp bài
+// Relation for table Users
 export const usersRelations = relations(users, ({ many }) => ({
-    quizzes: many(quizzes), // Một người dùng tạo nhiều bài kiểm tra
-    quizzSubmissions: many(quizzSubmissions), // Một người dùng có nhiều lượt nộp bài kiểm tra
+    quizzes: many(quizzes),
+    quizzSubmissions: many(quizzSubmissions), 
 }));
 
-// Bảng Accounts: Liên kết tài khoản người dùng với các nhà cung cấp OAuth
+// Table Accounts
 export const accounts = pgTable(
     "account",
     {
         userId: text("userId")
             .notNull()
-            .references(() => users.id, { onDelete: "cascade" }), // Khóa ngoại đến users.id, xóa cascade
-        type: text("type").notNull(), // Loại tài khoản (ví dụ: "oauth")
-        provider: text("provider").notNull(), // Nhà cung cấp (ví dụ: "google", "github")
-        providerAccountId: text("providerAccountId").notNull(), // ID tài khoản của nhà cung cấp
-        refresh_token: text("refresh_token"), // Refresh token
-        access_token: text("access_token"), // Access token
-        expires_at: integer("expires_at"), // Thời gian hết hạn của token
-        token_type: text("token_type"), // Loại token
-        scope: text("scope"), // Phạm vi quyền truy cập
-        id_token: text("id_token"), // ID token
-        session_state: text("session_state"), // Trạng thái phiên
+            .references(() => users.id, { onDelete: "cascade" }), 
+        type: text("type").notNull(), 
+        provider: text("provider").notNull(), 
+        providerAccountId: text("providerAccountId").notNull(),
+        refresh_token: text("refresh_token"), 
+        access_token: text("access_token"), 
+        expires_at: integer("expires_at"), 
+        token_type: text("token_type"),
+        scope: text("scope"), 
+        id_token: text("id_token"), 
+        session_state: text("session_state"), 
     },
     (account) => [
         {
-            // Khóa chính phức hợp để đảm bảo tính duy nhất cho mỗi tài khoản từ một nhà cung cấp
             compoundKey: primaryKey({
                 columns: [account.provider, account.providerAccountId],
             }),
@@ -57,28 +56,28 @@ export const accounts = pgTable(
     ]
 );
 
-// Bảng Sessions: Quản lý phiên đăng nhập của người dùng
+// Table Sessions
 export const sessions = pgTable("session", {
-    sessionToken: text("sessionToken").primaryKey(), // Token phiên, khóa chính
+    sessionToken: text("sessionToken").primaryKey(),
     userId: text("userId")
         .notNull()
-        .references(() => users.id, { onDelete: "cascade" }), // Khóa ngoại đến users.id, xóa cascade
-    expires: timestamp("expires", { mode: "date" }).notNull(), // Thời gian hết hạn của phiên
+        .references(() => users.id, { onDelete: "cascade" }), 
+    expires: timestamp("expires", { mode: "date" }).notNull(), 
 });
 
-// Bảng Quizzes: Lưu trữ thông tin về các bài kiểm tra
+// Table Quizzes
 export const quizzes = pgTable("quizzes", {
-    id: serial("id").primaryKey(), // ID bài kiểm tra, tự động tăng
-    name: text("name"), // Tên bài kiểm tra
-    description: text("description"), // Mô tả bài kiểm tra
-    userId: text("user_id").references(() => users.id), // ID người dùng tạo bài kiểm tra
+    id: serial("id").primaryKey(), 
+    name: text("name"), 
+    description: text("description"), 
+    userId: text("user_id").references(() => users.id), 
 });
 
-// Quan hệ cho bảng Quizzes: Một bài kiểm tra có nhiều câu hỏi và nhiều lượt nộp bài
+// Relation for table Quizzes
 export const quizzesRelations = relations(quizzes, ({ many, one }) => ({
-    question: many(questions), // Một bài kiểm tra có nhiều câu hỏi
-    submissions: many(quizzSubmissions), // Một bài kiểm tra có nhiều lượt nộp bài
-    user: one(users, { // Một bài kiểm tra thuộc về một người dùng
+    question: many(questions), 
+    submissions: many(quizzSubmissions), 
+    user: one(users, { 
         fields: [quizzes.userId],
         references: [users.id],
     }),
@@ -98,6 +97,7 @@ export const questions = pgTable("questions", {
     quizzId: integer("quiz_id").references(() => quizzes.id), 
     type: questionTypeEnum("type").default("multiple_choice"), 
     audioText : text("audio_text"), 
+    order: integer("order").notNull().default(0),
 });
 
 // Relations for Questions table

@@ -44,6 +44,16 @@ export default function QuizzPage({ quizz }: Props) {
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
+  //Test submission processing
+  const handleSubmit = useCallback(async () => {
+    try {
+      await saveSubmission({ score, userAnswers }, quizz.id);
+      setSubmitted(true); 
+    } catch (e) {
+      console.error("Error submitting quiz:", e);
+    }
+  }, [score, userAnswers, quizz.id]);
+
   // Handle when user answers a question
   const handleQuestionAnswered = useCallback(
     (
@@ -74,18 +84,8 @@ export default function QuizzPage({ quizz }: Props) {
         }, 1500);
       }
     },
-    [isLastQuestion]
+    [isLastQuestion, handleSubmit]
   );
-
-  //Test submission processing
-  const handleSubmit = async () => {
-    try {
-      await saveSubmission({ score, userAnswers }, quizz.id);
-      setSubmitted(true); 
-    } catch (e) {
-      console.error("Error submitting quiz:", e);
-    }
-  };
 
   // Handling exit test
   const handleExit = () => {

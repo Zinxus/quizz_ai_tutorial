@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getQuizzDetail } from "@/app/actions/getQuizzDetail";
 import { updateQuizzFull } from "@/app/actions/updateQuizzFull";
 import { useRouter } from "next/navigation";
@@ -20,26 +21,88 @@ import { useRouter } from "next/navigation";
 export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
   const [open, setOpen] = useState(false);
   const [payload, setPayload] = useState<any>(null);
+  const [newQuestionType, setNewQuestionType] = useState("multiple_choice");
   const router = useRouter();
+
+  // Effect function to update
+  useEffect(() => {
+    if (payload?.questions) {
+      const updatedQuestionsWithOrder = payload.questions.map((q: any, index: number) => ({
+        ...q,        
+        id: q.id, 
+        order: index,
+      }));
+      if (JSON.stringify(updatedQuestionsWithOrder.map((q:any) => ({ id: q.id, order: q.order}))) !==
+          JSON.stringify(payload.questions.map((q:any) => ({ id: q.id, order: q.order})))) {
+        setPayload((prev: any) => ({
+          ...prev,
+          questions: updatedQuestionsWithOrder,
+        }));
+      }
+    }
+  }, [payload?.questions]);
 
   // Load quizz details when dialog opens
   const onOpenChange = async (val: boolean) => {
     setOpen(val);
     if (val && !payload) {
       const data = await getQuizzDetail(quizzId);
-      setPayload(data);
+      if (data && data.questions) {
+        const questionsWithInitialOrder = data.questions.map((q: any, index: number) => ({
+          ...q,
+          order: index,
+        }));
+        setPayload({ ...data, questions: questionsWithInitialOrder });
+      }
     }
+  };
+  // Question shuffle function
+  const shuffleQuestions = () => {
+    if (!payload || !payload.questions) return;
+
+    setPayload((prev: any) => {
+      const shuffledQuestions = [...prev.questions];
+      // Fisher-Yates shuffle algorithm
+      for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+      }
+
+      const updatedQuestionsWithOrder = shuffledQuestions.map((q: any, index: number) => ({
+        ...q,
+        order: index,
+      }));
+
+      return {
+        ...prev,
+        questions: updatedQuestionsWithOrder,
+      };
+    });
   };
 
   // Add Question
   const addQuestion = () => {
-    setPayload((prev: any) => ({
-      ...prev,
-      questions: [
-        ...prev.questions,
-        { questionText: "", answers: [{ answerText: "", isCorrect: false }] },
-      ],
-    }));
+    const base = { questionText: "", type: newQuestionType };
+    let newQ: any = {};
+    if (newQuestionType === "multiple_choice") {
+      newQ = { ...base, answers: [{ answerText: "", isCorrect: false }] };
+    } else if (newQuestionType === "write") {
+      newQ = { ...base, answers: [{ answerText: "", isCorrect: true }] };
+    } else if (newQuestionType === "listen") {
+      newQ = {
+        ...base,
+        audioText: "",
+        answers: [{ answerText: "", isCorrect: true }],
+      };
+    }
+
+    setPayload((prev: any) => {
+      const newQuestions = [...prev.questions, { ...newQ, order: prev.questions.length }];
+      return {
+        ...prev,
+        questions: newQuestions,
+      };
+    });
   };
 
   // Add Answer
@@ -50,9 +113,12 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
   };
 
   // Handler to save changes
-
   const handleSave = async () => {
-    await updateQuizzFull(quizzId, payload);
+    const questionsToSave = payload.questions.map((q: any, index: number) => ({
+        ...q,
+        order: index 
+    }));
+    await updateQuizzFull(quizzId, { ...payload, questions: questionsToSave });
     setOpen(false);
     router.refresh();
   };
@@ -95,6 +161,12 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
                 />
               </div>
 
+              <div className="flex justify-end">
+                <Button variant="secondary" onClick={shuffleQuestions}>
+                  Shuffle Questions
+                </Button>
+              </div>
+
               {/* Questions */}
               {payload.questions.map((q: any, qi: number) => (
                 <div key={qi} className="border p-4 rounded space-y-4">
@@ -102,9 +174,11 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
                   <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Question {qi + 1}</label>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => addAnswer(qi)}>
-                        + Add Answer
-                      </Button>
+                      {q.type === "multiple_choice" && (
+                        <Button size="sm" variant="outline" onClick={() => addAnswer(qi)}>
+                          + Add Answer
+                        </Button>
+                      )}
                       <button
                         type="button"
                         className="text-red-500 hover:text-red-700 p-1"
@@ -128,9 +202,11 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
                   />
 
                   {/* Answers */}
+                  {q.type === "multiple_choice" && (
                   <div className="space-y-2">
                     {q.answers.map((a: any, ai: number) => (
                       <div key={ai} className="flex items-center space-x-2">
+                        <label className="block text-sm mb-1">Answer:</label>
                         <Input
                           className="flex-1"
                           placeholder="Answer text…"
@@ -164,13 +240,72 @@ export default function EditQuizzModal({ quizzId }: { quizzId: number }) {
                           }}>🗑</button>
                       </div>
                     ))}
+                  </div>)}
+                  {q.type === "write" && (
+                    <div className="space-y-2">
+                      <div className=" flex items-center space-x-2">
+                        <label className="block text-sm mb-1">Answer:</label>
+                        <Input
+                          placeholder="Correct written answer"
+                          value={q.answers?.[0]?.answerText || ""}
+                          onChange={(e) => {
+                            const qs2 = [...payload.questions];
+                            qs2[qi].answers[0].answerText = e.target.value;
+                            setPayload({ ...payload, questions: qs2 });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {q.type === "listen" && (
+                  <div className="space-y-2">
+                    <div className=" flex items-center space-x-2">
+                      <label className="block text-sm mb-1">Audio:</label>
+                      <Input
+                        placeholder="Audio text"
+                        className="mb-2"
+                        value={q.audioText || ""}
+                        onChange={(e) => {
+                          const qs2 = [...payload.questions];
+                          qs2[qi].audioText = e.target.value;
+                          setPayload({ ...payload, questions: qs2 });
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <label className="block text-sm mb-1">Answer:</label>
+                      <Input
+                        placeholder="Correct answer for listening"
+                        value={q.answers?.[0]?.answerText || ""}
+                        onChange={(e) => {
+                          const qs2 = [...payload.questions];
+                          qs2[qi].answers[0].answerText = e.target.value;
+                          setPayload({ ...payload, questions: qs2 });
+                        }}
+                      />
+                    </div>
                   </div>
+                )}
+
                 </div>
               ))}
-
-              <Button size="sm" variant="outline" onClick={addQuestion}>
-                + Add Question
-              </Button>
+              
+              <div className="flex items-center gap-2">
+                <Select value={newQuestionType} onValueChange={(v) => setNewQuestionType(v)}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                    <SelectItem value="write">Written Answer</SelectItem>
+                    <SelectItem value="listen">Listening</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={addQuestion}>
+                  + Add Question
+                </Button>
+              </div>
             </div>
           )}
 
